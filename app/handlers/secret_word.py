@@ -17,7 +17,18 @@ from app.texts import load_messages
 log = logging.getLogger(__name__)
 router = Router(name="secret_word")
 
-CHECKLIST_PDF = Path(__file__).resolve().parent.parent.parent / "content" / "checklist.pdf"
+CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "content"
+CHECKLIST_PDF = CONTENT_DIR / "checklist.pdf"
+BONUS_PDF = CONTENT_DIR / "bonus.pdf"
+
+
+def _pick_checklist_pdf() -> Path | None:
+    """Prefer checklist.pdf; fall back to bonus.pdf while owner hasn't uploaded the second file."""
+    if CHECKLIST_PDF.exists():
+        return CHECKLIST_PDF
+    if BONUS_PDF.exists():
+        return BONUS_PDF
+    return None
 
 _CYR_TO_LAT = {
     "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "yo",
@@ -70,10 +81,13 @@ async def maybe_secret(message: Message) -> None:
     markup = url_button(messages.secret_word_reply.button_text, settings.course_url)
     await message.answer(reply_text, reply_markup=markup)
 
-    if CHECKLIST_PDF.exists():
+    pdf = _pick_checklist_pdf()
+    if pdf is not None:
         await message.answer_document(
-            document=FSInputFile(CHECKLIST_PDF),
+            document=FSInputFile(pdf),
             caption=messages.secret_word_reply.checklist_caption,
         )
+        if pdf != CHECKLIST_PDF:
+            log.info("checklist.pdf missing — sent bonus.pdf as fallback")
     else:
-        log.warning("checklist.pdf not found at %s — skipping attachment", CHECKLIST_PDF)
+        log.warning("no PDF found in content/ — skipping attachment")
