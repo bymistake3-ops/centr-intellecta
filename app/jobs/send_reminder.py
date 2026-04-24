@@ -9,6 +9,7 @@ from sqlalchemy import select
 from app.bot import get_bot
 from app.config import get_settings
 from app.db import session_scope
+from app.keyboards import url_button
 from app.models import ScheduledMessage, User
 from app.scheduler import get_scheduler
 from app.texts import load_messages
@@ -38,7 +39,7 @@ def _mark_sent(user_id: int, kind: str, error: str | None = None) -> None:
         db.commit()
 
 
-def _cancel_pending_jobs(user_id: int) -> None:
+def cancel_pending_jobs(user_id: int) -> None:
     scheduler = get_scheduler()
     for kind in ALL_KINDS:
         try:
@@ -63,18 +64,25 @@ async def send_reminder(user_id: int, kind: str) -> None:
         first_name = user.first_name or ""
         webinar_start_utc = user.webinar_start_at.replace(tzinfo=timezone.utc)
 
-    template = getattr(messages.reminders, kind).text
-    text = template.format(
+    reminder = getattr(messages.reminders, kind, None)
+    if reminder is None:
+        log.error("send_reminder: unknown kind %s", kind)
+        return
+
+    text = reminder.text.format(
         first_name=first_name,
         webinar_date=format_webinar_date_msk(webinar_start_utc),
         webinar_time=format_webinar_time_msk(webinar_start_utc),
         webinar_url=settings.webinar_url,
-        record_url=settings.record_url,
-        free_course_url=settings.free_course_url,
+        course_url=settings.course_url,
     )
 
+    markup = None
+    if reminder.button_text:
+        markup = url_button(reminder.button_text, settings.webinar_url)
+
     try:
-        await bot.send_message(chat_id=user_id, text=text)
+        await bot.send_message(chat_id=user_id, text=text, reply_markup=markup)
         _mark_sent(user_id, kind)
         log.info("sent %s to %s", kind, user_id)
     except TelegramForbiddenError:
@@ -85,7 +93,7 @@ async def send_reminder(user_id: int, kind: str) -> None:
                 user.is_blocked = True
                 db.commit()
         _mark_sent(user_id, kind, error="TelegramForbiddenError")
-        _cancel_pending_jobs(user_id)
+        cancel_pending_jobs(user_id)
     except TelegramRetryAfter as e:
         log.warning("flood control for %s: retry after %s", user_id, e.retry_after)
         _mark_sent(user_id, kind, error=f"retry_after={e.retry_after}")

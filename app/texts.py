@@ -7,46 +7,52 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-class ReminderText(BaseModel):
-    text: str
-
-
-class Reminders(BaseModel):
-    T1: ReminderText
-    T2: ReminderText
-    T3: ReminderText
-    T4: ReminderText
-    T5: ReminderText
-    T6: ReminderText
-
-
 class Welcome(BaseModel):
     text: str
-    pdf_caption: str = ""
+
+
+class WelcomePdf(BaseModel):
+    caption: str
 
 
 class SimpleText(BaseModel):
     text: str
 
 
+class ReminderText(BaseModel):
+    text: str
+    button_text: str | None = None
+
+
+class Reminders(BaseModel):
+    TG2: ReminderText
+    TG3: ReminderText
+    TG4: ReminderText
+    TG5: ReminderText
+
+
+class SecretWordReply(BaseModel):
+    text: str
+    button_text: str
+    checklist_caption: str
+
+
 class Timings(BaseModel):
     webinar_hour_msk: int = 19
     webinar_minute_msk: int = 0
-    T1_hour_msk: int = 20
-    T2_hour_msk: int = 10
-    T3_minutes_before: int = 60
-    T4_minutes_before: int = 5
-    T5_minutes_after: int = 30
-    T6_hours_after: int = 24
+    TG2_hour_msk: int = 10
+    TG3_minutes_before: int = 30
+    TG4_minutes_before: int = 5
+    TG5_minutes_after: int = 90
 
 
 class MessagesConfig(BaseModel):
-    welcome: Welcome
+    tg1: Welcome
+    tg1a: WelcomePdf
     already_registered: SimpleText
     reminders: Reminders
-    secret_word_reply: SimpleText
+    secret_word_reply: SecretWordReply
     fallback: SimpleText
-    waiting_contact_hint: SimpleText
     timings: Timings = Field(default_factory=Timings)
 
 
@@ -58,7 +64,3 @@ def load_messages() -> MessagesConfig:
     with MESSAGES_PATH.open("r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
     return MessagesConfig(**raw)
-
-
-def format_text(template: str, **params: object) -> str:
-    return template.format(**params)

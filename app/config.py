@@ -11,9 +11,8 @@ class Settings(BaseSettings):
     admin_user_id: int = Field(0, alias="ADMIN_USER_ID")
 
     webinar_url: str = Field(..., alias="WEBINAR_URL")
-    record_url: str = Field("", alias="RECORD_URL")
-    free_course_url: str = Field(..., alias="FREE_COURSE_URL")
-    secret_word: str = Field(..., alias="SECRET_WORD")
+    course_url: str = Field(..., alias="COURSE_URL")
+    secret_word: str = Field("ПРОКАЧКА", alias="SECRET_WORD")
 
     data_dir: Path = Field(Path("./data"), alias="DATA_DIR")
     tz: str = Field("Europe/Moscow", alias="TZ")

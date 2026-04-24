@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def contact_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="Поделиться номером", request_contact=True)]],
-        resize_keyboard=True,
-        one_time_keyboard=True,
-        input_field_placeholder="Нажми кнопку внизу",
-    )
+def url_button(text: str, url: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=text, url=url)]])
