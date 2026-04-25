@@ -18,14 +18,14 @@ log = logging.getLogger(__name__)
 router = Router(name="secret_word")
 
 CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "content"
-CHECKLIST_PDF = CONTENT_DIR / "checklist.pdf"
+SECOND_BONUS_PDF = CONTENT_DIR / "bonus2.pdf"
 BONUS_PDF = CONTENT_DIR / "bonus.pdf"
 
 
-def _pick_checklist_pdf() -> Path | None:
-    """Prefer checklist.pdf; fall back to bonus.pdf while owner hasn't uploaded the second file."""
-    if CHECKLIST_PDF.exists():
-        return CHECKLIST_PDF
+def _pick_secret_pdf() -> Path | None:
+    """Prefer bonus2.pdf (post-webinar bonus); fall back to bonus.pdf if owner hasn't uploaded it yet."""
+    if SECOND_BONUS_PDF.exists():
+        return SECOND_BONUS_PDF
     if BONUS_PDF.exists():
         return BONUS_PDF
     return None
@@ -81,13 +81,13 @@ async def maybe_secret(message: Message) -> None:
     markup = url_button(messages.secret_word_reply.button_text, settings.course_url)
     await message.answer(reply_text, reply_markup=markup)
 
-    pdf = _pick_checklist_pdf()
+    pdf = _pick_secret_pdf()
     if pdf is not None:
         await message.answer_document(
             document=FSInputFile(pdf),
             caption=messages.secret_word_reply.checklist_caption,
         )
-        if pdf != CHECKLIST_PDF:
-            log.info("checklist.pdf missing — sent bonus.pdf as fallback")
+        if pdf != SECOND_BONUS_PDF:
+            log.info("bonus2.pdf missing — sent bonus.pdf as fallback")
     else:
         log.warning("no PDF found in content/ — skipping attachment")

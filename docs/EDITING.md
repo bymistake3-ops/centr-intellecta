@@ -4,7 +4,7 @@
 |---|---|---|
 | Тексты сообщений | `content/messages.yaml` в GitHub | После commit → автодеплой Amvera |
 | PDF-бонус «Карта из 5 шагов» | `content/bonus.pdf` в GitHub | После commit → автодеплой |
-| PDF-чеклист «30 дней» | `content/checklist.pdf` в GitHub | После commit → автодеплой |
+| PDF-бонус «после вебинара» | `content/bonus2.pdf` в GitHub | После commit → автодеплой |
 | Ссылки (эфир, курс) | Amvera → ENV | После Restart |
 | Кодовое слово | Amvera → ENV `SECRET_WORD` | После Restart |
 
@@ -61,11 +61,11 @@ TG1:                         # ❌ менять ключ tg1 нельзя
 4. Перетащи PDF. **Имя должно быть ровно `bonus.pdf`** (строчными буквами).
 5. Commit.
 
-### `content/checklist.pdf` — «Чек-лист 30 дней прокачки мозга»
+### `content/bonus2.pdf` — бонус после вебинара
 
 Выдаётся в TG6 после кодового слова ПРОКАЧКА.
 
-Та же процедура, имя файла ровно `checklist.pdf`.
+Та же процедура, имя файла ровно `bonus2.pdf`. Пока этого файла нет, бот отправит вместо него `bonus.pdf`.
 
 Ограничение: файл до 10 МБ. Если больше — ужми PDF (например https://smallpdf.com/compress-pdf).
 
