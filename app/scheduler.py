@@ -6,7 +6,7 @@ from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from app.config import get_settings
+from app.db import get_engine
 from app.timing import MSK
 
 log = logging.getLogger(__name__)
@@ -17,9 +17,8 @@ _scheduler: AsyncIOScheduler | None = None
 def get_scheduler() -> AsyncIOScheduler:
     global _scheduler
     if _scheduler is None:
-        settings = get_settings()
         jobstores = {
-            "default": SQLAlchemyJobStore(url=settings.db_url, tablename="apscheduler_jobs")
+            "default": SQLAlchemyJobStore(engine=get_engine(), tablename="apscheduler_jobs")
         }
         executors = {"default": AsyncIOExecutor()}
         job_defaults = {
@@ -33,5 +32,5 @@ def get_scheduler() -> AsyncIOScheduler:
             job_defaults=job_defaults,
             timezone=MSK,
         )
-        log.info("Scheduler initialised (jobstore=%s)", settings.db_url)
+        log.info("Scheduler initialised (shared engine)")
     return _scheduler

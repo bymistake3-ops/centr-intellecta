@@ -104,19 +104,19 @@ async def cmd_start(message: Message) -> None:
 def _schedule_touches(user_id: int, touches: list[ScheduledTouch]) -> None:
     scheduler = get_scheduler()
 
+    for touch in touches:
+        scheduler.add_job(
+            SEND_REMINDER_REF,
+            trigger="date",
+            run_date=touch.run_at_utc,
+            id=job_id_for(user_id, touch.kind),
+            args=[user_id, touch.kind],
+            replace_existing=True,
+        )
+
     with session_scope() as db:
         for touch in touches:
             job_id = job_id_for(user_id, touch.kind)
-
-            scheduler.add_job(
-                SEND_REMINDER_REF,
-                trigger="date",
-                run_date=touch.run_at_utc,
-                id=job_id,
-                args=[user_id, touch.kind],
-                replace_existing=True,
-            )
-
             existing = db.query(ScheduledMessage).filter_by(job_id=job_id).one_or_none()
             if existing is None:
                 db.add(
