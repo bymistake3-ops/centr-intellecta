@@ -1,0 +1,18 @@
+# Виртуальное окружение
+.venv/
+venv/
+
+# Python кэш
+__pycache__/
+*.pyc
+*.pyo
+
+# История диктовок и временные аудио
+history.jsonl
+*.wav
+
+# macOS
+.DS_Store
+
+# pytest
+.pytest_cache/
